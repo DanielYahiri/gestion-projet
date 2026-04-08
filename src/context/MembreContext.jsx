@@ -43,6 +43,8 @@ export function MembreProvider({ children }) {
           if (!dejaCherche.current) {
             dejaCherche.current = true
             await chargerMembre(session.user.id)
+          } else {
+            setChargementAuth(false) // ✅ fix chargement infini au refresh
           }
         } else if (event === 'SIGNED_OUT') {
           dejaCherche.current = false
@@ -50,6 +52,8 @@ export function MembreProvider({ children }) {
           setChargementAuth(false)
         } else if (event === 'TOKEN_REFRESHED') {
           // ne rien faire, session déjà chargée
+        } else {
+          setChargementAuth(false) // ✅ sécurité pour tout event inattendu
         }
       }
     )
