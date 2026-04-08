@@ -29,8 +29,15 @@ export function MembreProvider({ children }) {
   }
 
   useEffect(() => {
+    // ✅ Timeout de sécurité : si Supabase ne répond pas en 5s, on arrête le chargement
+    const timeout = setTimeout(() => {
+      setChargementAuth(false)
+    }, 5000)
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        clearTimeout(timeout) // ✅ Annule le timeout si Supabase répond
+        
         if (event === 'INITIAL_SESSION') {
           if (session?.user) {
             dejaCherche.current = true
@@ -44,21 +51,22 @@ export function MembreProvider({ children }) {
             dejaCherche.current = true
             await chargerMembre(session.user.id)
           } else {
-            setChargementAuth(false) // ✅ fix chargement infini au refresh
+            setChargementAuth(false)
           }
         } else if (event === 'SIGNED_OUT') {
           dejaCherche.current = false
           setMembreActif(null)
           setChargementAuth(false)
-        } else if (event === 'TOKEN_REFRESHED') {
-          // ne rien faire, session déjà chargée
         } else {
-          setChargementAuth(false) // ✅ sécurité pour tout event inattendu
+          setChargementAuth(false)
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function deconnexion() {
