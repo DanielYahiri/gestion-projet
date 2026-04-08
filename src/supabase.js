@@ -7,6 +7,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     storageKey: 'dataflow-auth',
-    storage: window.localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
   }
 })
